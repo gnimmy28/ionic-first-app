@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+import { CapitalizePipe } from '../../pipes/capitalize.pipe';
 
 @Component({
   selector: 'app-animals-game',
@@ -78,7 +79,7 @@ export class AnimalsGamePage implements OnInit {
 
   private media;
 
- 
+  public isReorderDisabled = true;
 
   constructor(private toastCtrl:ToastController) { }
 
@@ -88,40 +89,36 @@ export class AnimalsGamePage implements OnInit {
   play(){
 
     //Choisir un animal au hasard si aucun n'a encore été choisit
-    if( ! this.chosenAnimal){
-      let randomPosition = Math.floor(Math.random()*this.animals.length);
+    if(! this.chosenAnimal){
+      let randomPosition = Math.floor(Math.random()* this.animals.length);
       this.chosenAnimal = this.animals[randomPosition];
-    } 
+    }
 
     //Stopper le son en cours
     if(this.media && (this.media.currentTime != this.media.duration)){
-    this.media.pause();
+      this.media.pause();
     }
-   
-
+    
     //Lecture du son
     this.media = new Audio("assets" + this.chosenAnimal.file);
     this.media.load();
     this.media.play();
-
-    console.log(this.media);
-
     this.chosenAnimal.playing = true;
-    
+
     //Masquer la note de musique quand le son est terminé
     var that = this;
     this.media.ontimeupdate = function(){
       if(this.ended && that.chosenAnimal){
-          that.chosenAnimal.playing = false;
+        that.chosenAnimal.playing = false;
       }
     }
-    
+
   }
 
   async guess(animal){
     var message;
     if(! this.chosenAnimal){
-      message = "Il faut d'abord cliquer sur JOUER avant de deviner un animal...Cabron";
+      message = "Il faut d'abord cliquer sur JOUER avant de deviner un animal... Cabron";
     } else if(animal.title != this.chosenAnimal.title){
       message = "Perdu mais tu peux essayer encore petit scarabé";
     } else {
@@ -130,16 +127,19 @@ export class AnimalsGamePage implements OnInit {
       this.chosenAnimal = null;
     }
 
-    
     const toast = await this.toastCtrl.create({
       message: message,
       duration: 1000,
-      position:"bottom"
+      position: "bottom"
     });
 
     toast.present();
 
-    //console.log(toast);
+  }
+
+  doReorder(even){
+    even.detail.complete(this.animals);
+    console.log(this.animals);
   }
 
 }
